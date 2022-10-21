@@ -5,10 +5,9 @@ import datetime
 import json
 from os import listdir
 from os.path import isfile, join
+from datetime import datetime, timedelta
 
 class Page:
-    activePage = 0
-
     def __init__(self, title, menu):
         self.title = title
         self.menu = menu
@@ -53,7 +52,19 @@ leaderboardsPage = Page(title, menu)
 def mainOptions(choice):
     match choice:
         case 1:
-            print('Wybrano 1')
+            os.system('cls')
+            print('Find a player by nickname')
+            nickname = input('Enter nickname: ')
+            response = requests.get("https://api.chess.com/pub/player/" + nickname).json()
+            try:
+                country = (requests.get(response['country']).json())['name']
+            except KeyError:
+                input('Can not find user!')
+                mainOptions(1)
+            dt = datetime.fromtimestamp(response['joined']).strftime("%Y-%m-%d, %H:%M")
+            os.system('cls')
+            print('User info: \nName: ', response['name'], '\nCountry: ', country, '\nNickname: ', response['username'], '\nPlayer id: ', response['player_id'], '\nStatus: ', response['status'], '\nJoined: ', dt , '\nFollowers: ', response['followers'], '\nURL: ', response['url'])
+            input()
         case 2:
             leaderboardsPage.print_menu()
             response = requests.get("https://api.chess.com/pub/leaderboards").json()
@@ -62,8 +73,6 @@ def mainOptions(choice):
             leaderboardsOptions(choice, response)
         case 3:
             exit()
-        case _:
-            print('Inne')
 
 def leaderboardsOptions(choice, response):
 
@@ -117,18 +126,8 @@ def leaderboardsOptions(choice, response):
         choice = int(input('Choice: '))
         mainOptions(choice)
 
-
 #---------------------------------------------
 
 mainPage.print_menu()
-
-match Page.activePage:
-    #mainPage
-    case 0:
-        choice = int(input('Choice: '))
-        mainOptions(choice)
-    #leaderboardsPage
-    case 1:
-        print('Wybrano 1')
-    case 2:
-        print('Wybrano 2')
+choice = int(input('Choice: '))
+mainOptions(choice)
