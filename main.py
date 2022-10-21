@@ -7,6 +7,7 @@ from os import listdir
 from os.path import isfile, join
 from datetime import datetime, timedelta
 
+
 class Page:
     def __init__(self, title, menu):
         self.title = title
@@ -56,15 +57,20 @@ def mainOptions(choice):
             print('Find a player by nickname')
             nickname = input('Enter nickname: ')
             response = requests.get("https://api.chess.com/pub/player/" + nickname).json()
+            responseStats = requests.get("https://api.chess.com/pub/player/" + nickname + "/stats").json()
             try:
                 country = (requests.get(response['country']).json())['name']
             except KeyError:
                 input('Can not find user!')
                 mainOptions(1)
-            dt = datetime.fromtimestamp(response['joined']).strftime("%Y-%m-%d, %H:%M")
+            dt = datetime.fromtimestamp(response['joined']).strftime("%Y-%m-%d, %H:%M")  # type: ignore
             os.system('cls')
-            print('User info: \nName: ', response['name'], '\nCountry: ', country, '\nNickname: ', response['username'], '\nPlayer id: ', response['player_id'], '\nStatus: ', response['status'], '\nJoined: ', dt , '\nFollowers: ', response['followers'], '\nURL: ', response['url'])
+            print('User info: \nName: ', response['name'], '\nCountry: ', country, '\nNickname: ', response['username'], '\nPlayer id: ', response['player_id'], '\nStatus: ', response['status'], '\nJoined: ', dt , '\nFollowers: ', response['followers'])
+            print('\nStats:\nRapid: ', responseStats['chess_rapid']['last']['rating'], '\nBlitz: ', responseStats['chess_blitz']['last']['rating'], '\nBullet: ', responseStats['chess_bullet']['last']['rating'], '\nTactics: ', responseStats['tactics']['highest']['rating'])
             input()
+            mainPage.print_menu()
+            choice = int(input('Choice: '))
+            mainOptions(choice)
         case 2:
             leaderboardsPage.print_menu()
             response = requests.get("https://api.chess.com/pub/leaderboards").json()
@@ -93,7 +99,7 @@ def leaderboardsOptions(choice, response):
         os.system('cls')
         leaderboardsOptions(choice, response)
     elif choice == 12:
-        filePath = './Saved/' + str(datetime.datetime.now().year) + '-' + str(datetime.datetime.now().month) + '-' + str(datetime.datetime.now().day) + '-' + str(datetime.datetime.now().hour) + '-' + str(datetime.datetime.now().minute) + '.json'
+        filePath = './Saved/' + str(datetime.now().year) + '-' + str(datetime.now().month) + '-' + str(datetime.now().day) + '-' + str(datetime.now().hour) + '-' + str(datetime.now().minute) + '.json'
         file = open(str(filePath), "w")
         file.write(json.dumps(response))
         file.close()
